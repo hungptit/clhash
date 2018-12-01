@@ -12,12 +12,16 @@
 #define XXH_INLINE_ALL
 #include "xxhash.h"
 
+// meowhash
+#include "meow_intrinsics.h"
+#include "meow_hash.h"
+
 class CharGenerator {
   public:
     std::string operator()(const size_t len) {
         std::string str(len, 0);
         for (size_t idx = 0; idx < len; ++idx) { str[idx] = valid_characters[rgn() % N]; }
-        std::cout << "Generated random string: " << str << "\n";
+        // std::cout << "Generated random string: " << str << "\n";
         return str;
     }
 
@@ -35,7 +39,7 @@ std::string generate_random_string() {
     const char *var = std::getenv("LEN");
     if (var == nullptr) { throw std::runtime_error("LEN environment variable is required!"); }
     int len = std::stoi(var);
-    std::cout << "String length: " << len << "\n";
+    // std::cout << "String length: " << len << "\n";
     CharGenerator gen;
     return gen(len);
 }
@@ -92,6 +96,15 @@ void farmhash_string(benchmark::State &state) {
     }
 }
 BENCHMARK(farmhash_string);
+
+// MeowHash
+void meowhash_string(benchmark::State &state) {
+	void *data = (void*)test_string.data();
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(MeowU64From(MeowHash_Accelerated(0, test_string.size(), data), 0));
+    }
+}
+BENCHMARK(meowhash_string);
 
 
 BENCHMARK_MAIN();

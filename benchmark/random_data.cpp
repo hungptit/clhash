@@ -14,6 +14,10 @@
 #define XXH_INLINE_ALL
 #include "xxhash.h"
 
+// meowhash
+#include "meow_intrinsics.h"
+#include "meow_hash.h"
+
 namespace {
     class RandomVector {
       public:
@@ -137,5 +141,24 @@ void hybrid_hash_double(benchmark::State &state) {
     for (auto _ : state) { benchmark::DoNotOptimize(h(ddata.data(), ddata.size())); }
 }
 BENCHMARK(hybrid_hash_double);
+
+// MeowHash
+void meowhash_int(benchmark::State &state) {
+	void *data = (void*)idata.data();
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(MeowU64From(MeowHash_Accelerated(0, idata.size() * sizeof(int), data), 0));
+    }
+}
+BENCHMARK(meowhash_int);
+
+// MeowHash
+void meowhash_double(benchmark::State &state) {
+	void *data = (void*)ddata.data();
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(MeowU64From(MeowHash_Accelerated(0, ddata.size() * sizeof(double), data), 0));
+    }
+}
+BENCHMARK(meowhash_double);
+
 
 BENCHMARK_MAIN();
